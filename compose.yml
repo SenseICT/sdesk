@@ -1,0 +1,160 @@
+services:
+  frontend:
+    container_name: safaridesk_os_front
+    image: ghcr.io/senseict/sdesk:latest-frontend
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+      nproc:
+        soft: 65536
+        hard: 65536
+      sysctls:
+        - net.core.somaxconn=65535
+        - vm.swappiness=1
+        - vm.dirty_ratio=80
+        - vm.dirty_background_ratio=5
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    ports:
+      - "9000:80"
+    volumes:
+      - safari:/mnt/safaridesk:ro
+    depends_on:
+      api:
+        condition: service_started
+    restart: always
+
+  api:
+    container_name: safaridesk_os_api
+    image: ghcr.io/senseict/sdesk:latest-backend
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+      nproc:
+        soft: 65536
+        hard: 65536
+      sysctls:
+        - net.core.somaxconn=65535
+        - vm.swappiness=1
+        - vm.dirty_ratio=80
+        - vm.dirty_background_ratio=5
+    build:
+      context: ./backend
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py install_pgvector &&
+             python manage.py migrate --noinput &&
+             python manage.py safari &&
+             daphne -b 0.0.0.0 -p 9100 RNSafarideskBack.asgi:application"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: RNSafarideskBack.settings.prod
+    volumes:
+      - gunicorn_logs:/var/log/gunicorn
+      - safari:/mnt
+    ports:
+      - "9100:9100"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    restart: always
+
+  worker:
+    container_name: safaridesk_os_worker
+    image: ghcr.io/senseict/sdesk:latest-worker
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+      nproc:
+        soft: 65536
+        hard: 65536
+      sysctls:
+        - net.core.somaxconn=65535
+        - vm.swappiness=1
+        - vm.dirty_ratio=80
+        - vm.dirty_background_ratio=5
+    build:
+      context: ./backend
+    command: >
+      sh -c "celery -A RNSafarideskBack.celery worker --loglevel=info --concurrency=2 &
+             celery -A RNSafarideskBack.celery beat --loglevel=info &
+             wait"
+    env_file:
+      - .env
+    environment:
+      DJANGO_SETTINGS_MODULE: RNSafarideskBack.settings.prod
+    volumes:
+      - celery_logs:/var/log/celery
+      - safari:/mnt
+    depends_on:
+      api:
+        condition: service_started
+
+  redis:
+    container_name: safaridesk_os_redis
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:latest
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+      nproc:
+        soft: 65536
+        hard: 65536
+      sysctls:
+        - net.core.somaxconn=65535
+        - vm.swappiness=1
+        - vm.dirty_ratio=80
+        - vm.dirty_background_ratio=5
+    ports:
+      - "9379:6379"
+    volumes:
+      - redisdata:/data
+
+  db:
+    container_name: safaridesk_os_db
+    image: percona/percona-distribution-postgresql:17.2.1
+    ulimits:
+      memlock: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+      nproc:
+        soft: 65536
+        hard: 65536
+      sysctls:
+        - net.core.somaxconn=65535
+        - vm.swappiness=1
+        - vm.dirty_ratio=80
+        - vm.dirty_background_ratio=5
+    environment:
+      POSTGRES_DB: ${DB_NAME:-safaridesk_os}
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+
+    ports:
+      - "9432:5432"
+    volumes:
+      - postgresdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgresdata:
+  redisdata:
+  gunicorn_logs:
+  celery_logs:
+  safari:
