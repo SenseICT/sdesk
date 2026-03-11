@@ -1,5 +1,6 @@
 
-export const formatDate = (dateString: string): string => {
+export const formatDate = (dateString: string | null): string => {
+  if (!dateString) return "N/A";
   return new Date(dateString).toLocaleString('en-US', {
     year: 'numeric',
     month: 'short',
@@ -9,18 +10,19 @@ export const formatDate = (dateString: string): string => {
   });
 };
 
-export const formatRelativeTime = (dateString: string): string => {
+export const formatRelativeTime = (dateString: string | null): string => {
+  if (!dateString) return "N/A";
   const now = new Date();
   const date = new Date(dateString);
   const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60));
-  
+
   if (diffInHours < 1) return 'Just now';
   if (diffInHours < 24) return `${diffInHours}h ago`;
   const diffInDays = Math.floor(diffInHours / 24);
   return `${diffInDays}d ago`;
 };
 
-export const formatDateOnly = (dateString: string): string => {
+export const formatDateOnly = (dateString: string | null): string => {
   return formatDate(dateString).split(' ')[0];
 };
 
