@@ -1,0 +1,89 @@
+# SafariDesk GitHub Actions - Build & Push Images
+
+This workflow builds and pushes SafariDesk Docker images to GitHub Container Registry (GHCR) on push to main or develop branches.
+
+## Features
+
+- **Multi-stage builds** for optimization (layer caching, smaller final images)
+- **Security scanning** with Trivy before pushing images
+- **Platform detection** and tag selection (linux/amd64, linux/arm64)
+- **Automated image tagging** with commit SHA for reproducibility
+
+## Images Built
+
+| Image | Platform | Repository | Description |
+| ------ | --------- | ----------- | ----------- |
+| `frontend` | linux/amd64, linux/arm64 | ghcr.io/safaridesk-os/core:frontend |
+| `backend` | linux/amd64, linux/arm64 | ghcr.io/safaridesk-os/core:backend |
+| `worker` | linux/amd64, linux/arm64 | ghcr.io/safaridesk-os/core:worker |
+
+## Build Matrix
+
+The workflow builds images for multiple architectures simultaneously to support:
+- **linux/amd64**: Standard x86_64 servers
+- **linux/arm64**: ARM servers (Apple Silicon, cloud ARM instances)
+
+## Workflow Triggers
+
+- **Push to main/develop**: Triggers full build and push
+- **Pull request**: Tests build but doesn't push
+- **Manual trigger**: Can be triggered from GitHub Actions tab
+
+## Security
+
+All images are scanned with Trivy before pushing:
+- **OS vulnerabilities**: Scans for CVEs in base OS and libraries
+- **Library vulnerabilities**: Scans for known vulnerabilities in dependencies
+- **Configuration issues**: Checks for insecure configurations
+- **Secrets scanning**: Verifies no secrets accidentally included
+
+## Usage
+
+### Automatic
+
+Images are built and pushed automatically on push to main or develop branches.
+
+### Manual Trigger
+
+```bash
+# From Actions tab: Build & Push all images
+gh workflow run build.yml --ref main
+
+# Build and push specific architecture
+gh workflow run build.yml --ref main -f platform=linux/arm64
+```
+
+### Pulling Images
+
+```bash
+# Pull specific architecture
+docker pull ghcr.io/safaridesk-os/core:backend:latest --platform linux/amd64
+
+# Pull latest without platform check
+docker pull ghcr.io/safaridesk-os/core:backend:latest
+
+# Using in docker-compose.yml
+services:
+  api:
+    image: ghcr.io/safaridesk-os/core:backend:latest
+```
+
+## Image Tags
+
+Images are tagged with both branch name and commit SHA:
+- `<branch>-<sha>`: e.g., `main-a1b2c3d` (deterministic, reproducible)
+- `latest`: Always points to the most recent build on main
+
+## Architecture Support
+
+Docker automatically selects the appropriate image for your platform. No manual intervention needed.
+
+## Deployment
+
+Use `compose.yml` for production deployments with Docker Stack/Swarm:
+```bash
+# Deploy to Docker Stack
+docker stack deploy -c compose.yml safari
+```
+
+See [DOCKER_COMPOSE_USAGE.md](../DOCKER_COMPOSE_USAGE.md) for more details on compose file differences.
