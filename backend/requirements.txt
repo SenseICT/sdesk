@@ -12,7 +12,8 @@ gunicorn
 django-otp
 celery
 redis
-django-cron
+# django-cron  # Original - incompatible with Django 5.1
+git+https://github.com/jorenham/django-cron.git@master#egg=django-cron  # Fork with Django 5.1 support
 email-reply-parser
 python-dotenv
 pillow
