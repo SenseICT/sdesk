@@ -34,8 +34,12 @@ def sign_oauth_state(data: Dict) -> str:
     return signing.dumps(data, salt=STATE_SALT)
 
 
-def verify_oauth_state(state: str) -> Dict:
-    return signing.loads(state, salt=STATE_SALT, max_age=3600)
+def verify_oauth_state(state: str) -> Dict | None:
+    """Verify OAuth state string. Returns None if invalid or expired."""
+    try:
+        return signing.loads(state, salt=STATE_SALT, max_age=3600)
+    except signing.BadSignature:
+        return None
 
 
 def _ensure_google_config():
@@ -44,7 +48,10 @@ def _ensure_google_config():
 
 
 def _ensure_ms_config():
-    if not settings.MICROSOFT_OAUTH_CLIENT_ID or not settings.MICROSOFT_OAUTH_CLIENT_SECRET:
+    if (
+        not settings.MICROSOFT_OAUTH_CLIENT_ID
+        or not settings.MICROSOFT_OAUTH_CLIENT_SECRET
+    ):
         raise ImproperlyConfigured("Microsoft OAuth credentials are not configured.")
 
 
@@ -175,6 +182,8 @@ def fetch_google_userinfo(access_token: str) -> Dict:
     Fetch basic profile info (including email) for the authorized Google user.
     """
     headers = {"Authorization": f"Bearer {access_token}"}
-    resp = requests.get("https://www.googleapis.com/oauth2/v2/userinfo", headers=headers, timeout=10)
+    resp = requests.get(
+        "https://www.googleapis.com/oauth2/v2/userinfo", headers=headers, timeout=10
+    )
     resp.raise_for_status()
     return resp.json()

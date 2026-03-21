@@ -54,53 +54,57 @@ from decouple import config
 from .base import *
 
 DEBUG = config("DEBUG", default=True, cast=bool)
-
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=True, cast=bool)
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="localhost,127.0.0.1",
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+)
 
 
 # Database
-DB_ENGINE = config('DB_ENGINE', default='django.db.backends.mysql')
+DB_ENGINE = config("DB_ENGINE", default="django.db.backends.mysql")
 DATABASES = {
-    'default': {
-        'ENGINE': DB_ENGINE,
-        'NAME': config('DB_NAME'),
-        'USER': config('DB_USER'),
-        'PASSWORD': config('DB_PASSWORD'),
-        'HOST': config('DB_HOST', default='127.0.0.1'),
-        'PORT': config('DB_PORT', default='3306'),
+    "default": {
+        "ENGINE": DB_ENGINE,
+        "NAME": config("DB_NAME"),
+        "USER": config("DB_USER"),
+        "PASSWORD": config("DB_PASSWORD"),
+        "HOST": config("DB_HOST", default="127.0.0.1"),
+        "PORT": config("DB_PORT", default="3306"),
     }
 }
 
 # Add MySQL-specific OPTIONS only for MySQL
-if 'mysql' in DB_ENGINE:
-    DATABASES['default']['OPTIONS'] = {
-        'charset': 'utf8mb4',
-        'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+if "mysql" in DB_ENGINE:
+    DATABASES["default"]["OPTIONS"] = {
+        "charset": "utf8mb4",
+        "init_command": "SET sql_mode='STRICT_TRANS_TABLES'",
     }
 
 # URLs
-FILE_BASE_URL = config('FILE_BASE_URL')
-FRONTEND_URL = config('FRONTEND_URL')
-FILE_URL = config('FILE_URL')
-AVATARS_URL = config('AVATARS_URL')
-TASK_FILE_URL = config('TASK_FILE_URL')
-KB_IMAGE_URL = config('KB_IMAGE_URL')
+FILE_BASE_URL = config("FILE_BASE_URL")
+FRONTEND_URL = config("FRONTEND_URL")
+FILE_URL = config("FILE_URL")
+AVATARS_URL = config("AVATARS_URL")
+TASK_FILE_URL = config("TASK_FILE_URL")
+KB_IMAGE_URL = config("KB_IMAGE_URL")
 
-FRONTEND_URL_BASE = config('FRONTEND_URL_BASE')
-DOMAIN_NAME = config('DOMAIN_NAME')
+FRONTEND_URL_BASE = config("FRONTEND_URL_BASE")
+DOMAIN_NAME = config("DOMAIN_NAME")
 
 # Media
-MEDIA_URL = config('MEDIA_URL')
-MEDIA_ROOT = config('MEDIA_ROOT')
+MEDIA_URL = config("MEDIA_URL")
+MEDIA_ROOT = config("MEDIA_ROOT")
 
 # Celery
-CELERY_BROKER_URL = config('CELERY_BROKER_URL')
-CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND')
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
+CELERY_BROKER_URL = config("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = config("CELERY_RESULT_BACKEND")
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
 CELERY_TIMEZONE = TIME_ZONE
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
-
 
 
 HOST_IP = config("REDIS_HOST", default="redis")
@@ -108,14 +112,14 @@ REDIS_PORT = config("REDIS_PORT", default=6379, cast=int)
 REDIS_PASSWORD = config("REDIS_PASSWORD", default="")
 
 if REDIS_PASSWORD:
-    REDIS_URL = f'redis://:{REDIS_PASSWORD}@{HOST_IP}:{REDIS_PORT}'
+    REDIS_URL = f"redis://:{REDIS_PASSWORD}@{HOST_IP}:{REDIS_PORT}"
 else:
-    REDIS_URL = f'redis://{HOST_IP}:{REDIS_PORT}'
+    REDIS_URL = f"redis://{HOST_IP}:{REDIS_PORT}"
 
 CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
             "hosts": [f"{REDIS_URL}/0"] if REDIS_PASSWORD else [(HOST_IP, REDIS_PORT)],
             "capacity": 1500,
             "expiry": 10,
@@ -130,6 +134,6 @@ CACHES = {
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "IGNORE_EXCEPTIONS": True,
-        }
+        },
     }
 }

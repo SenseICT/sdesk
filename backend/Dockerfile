@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y \
     libgirepository1.0-dev \
     libpango1.0-dev \
     supervisor \
+    git \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 

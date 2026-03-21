@@ -18,7 +18,7 @@ interface TicketState {
 interface CreateTicketData {
   title: string;
   description: string;
-  priority: 'low' | 'medium' | 'high' | 'urgent';
+  priority: 'low' | 'medium' | 'high' | 'critical' | 'normal';
   category: string;
   assigneeId?: string;
   tags?: string[];
@@ -54,6 +54,7 @@ const mockUsers: User[] = [
 const mockTickets: Ticket[] = [
   {
     id: '1',
+    ticket_id: 'INC-001',
     title: 'Unable to login to dashboard',
     description: 'User reports they cannot access their dashboard after recent password reset.',
     status: 'open',
@@ -73,6 +74,7 @@ const mockTickets: Ticket[] = [
   },
   {
     id: '2',
+    ticket_id: 'REQ-001',
     title: 'Request for new software license',
     description: 'Department needs additional Adobe Creative Suite licenses for new team members.',
     status: 'in_progress',
@@ -92,6 +94,7 @@ const mockTickets: Ticket[] = [
   },
   {
     id: '3',
+    ticket_id: 'MNT-001',
     title: 'Email server maintenance',
     description: 'Scheduled maintenance for email servers this weekend.',
     status: 'resolved',
@@ -121,6 +124,7 @@ const mockCreateTicket = async (ticketData: CreateTicketData): Promise<Ticket> =
   
   const newTicket: Ticket = {
     id: Date.now().toString(),
+    ticket_id: `TKT-${Date.now().toString(36).toUpperCase()}`,
     ...ticketData,
     status: 'open',
     requesterId: '1',

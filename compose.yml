@@ -10,11 +10,6 @@ services:
       nproc:
         soft: 65536
         hard: 65536
-      sysctls:
-        - net.core.somaxconn=65535
-        - vm.swappiness=1
-        - vm.dirty_ratio=80
-        - vm.dirty_background_ratio=5
     build:
       context: .
       dockerfile: frontend/Dockerfile
@@ -38,11 +33,6 @@ services:
       nproc:
         soft: 65536
         hard: 65536
-      sysctls:
-        - net.core.somaxconn=65535
-        - vm.swappiness=1
-        - vm.dirty_ratio=80
-        - vm.dirty_background_ratio=5
     build:
       context: ./backend
     command: >
@@ -78,11 +68,6 @@ services:
       nproc:
         soft: 65536
         hard: 65536
-      sysctls:
-        - net.core.somaxconn=65535
-        - vm.swappiness=1
-        - vm.dirty_ratio=80
-        - vm.dirty_background_ratio=5
     build:
       context: ./backend
     command: >
@@ -111,11 +96,6 @@ services:
       nproc:
         soft: 65536
         hard: 65536
-      sysctls:
-        - net.core.somaxconn=65535
-        - vm.swappiness=1
-        - vm.dirty_ratio=80
-        - vm.dirty_background_ratio=5
     ports:
       - "9379:6379"
     volumes:
@@ -123,7 +103,7 @@ services:
 
   db:
     container_name: safaridesk_os_db
-    image: percona/percona-distribution-postgresql:17.2.1
+    image: pgvector/pgvector:pg16
     ulimits:
       memlock: -1
       nofile:
@@ -132,11 +112,6 @@ services:
       nproc:
         soft: 65536
         hard: 65536
-      sysctls:
-        - net.core.somaxconn=65535
-        - vm.swappiness=1
-        - vm.dirty_ratio=80
-        - vm.dirty_background_ratio=5
     environment:
       POSTGRES_DB: ${DB_NAME:-safaridesk_os}
       POSTGRES_USER: ${DB_USER:-postgres}

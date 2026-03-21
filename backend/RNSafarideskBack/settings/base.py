@@ -1,4 +1,3 @@
-
 import os
 from datetime import timedelta
 from pathlib import Path
@@ -14,12 +13,23 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = "django-insecure-mn5i2vgz1md6mmm_&$*k+n#d0&5si-t0^4$fv*y8&+q6)5&1#_"
+# Default to insecure key for development, but REQUIRE env var in production
+SECRET_KEY = config(
+    "SECRET_KEY",
+    default="django-insecure-dev-only-change-in-production-mn5i2vgz1md6mmm",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# Default to False for security - dev.py overrides this to True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ["*"]
+# SECURITY: Restrict allowed hosts by default
+# Override in dev.py or prod.py with specific domains
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="",
+    cast=lambda v: [s.strip() for s in v.split(",") if s.strip()],
+)
 
 # Optional Fernet key used for encrypting mailbox credentials/OAuth tokens.
 SECRET_ENCRYPTION_KEY = config("SECRET_ENCRYPTION_KEY", default=None)
@@ -81,8 +91,8 @@ INSTALLED_APPS = [
     "django_otp.plugins.otp_totp",
     "rest_framework_simplejwt",
     "corsheaders",
-    'django_celery_beat',
-    'django_cron',
+    "django_celery_beat",
+    "django_cron",
     "drf_yasg",
     "oauth2_provider",
     "channels",
@@ -225,7 +235,6 @@ AUTH_PASSWORD_VALIDATORS = [
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
-
 LANGUAGE_CODE = "en-us"
 USE_I18N = True
 USE_TZ = True
@@ -258,18 +267,19 @@ CORS_ALLOW_METHODS = [
     "OPTIONS",
 ]
 
-CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOW_CREDENTIALS = True
+# SECURITY: CORS must be explicitly configured per environment
+# dev.py or prod.py should set CORS_ALLOWED_ORIGINS or CORS_ALLOWED_ORIGIN_REGEXES
+CORS_ALLOW_ALL_ORIGINS = config("CORS_ALLOW_ALL_ORIGINS", default=False, cast=bool)
+CORS_ALLOW_CREDENTIALS = config("CORS_ALLOW_CREDENTIALS", default=True, cast=bool)
 
+# Uncomment and configure in dev.py or prod.py for production
 # CORS_ALLOWED_ORIGINS = [
 #     "http://127.0.0.1:3000",
 #     "http://localhost:3000",
-#     "http://31.97.42.73:6900",
 # ]
-#
+
 # CORS_ALLOWED_ORIGIN_REGEXES = [
-#     r"^https?://([a-zA-Z0-9-]+\.)*localhost:3000$",
-#     r"^https?://127\.0\.0\.1:3000$",
+#     r"^https?://([a-zA-Z0-9-]+\.)*safaridesk\.io$",
 # ]
 
 
@@ -307,8 +317,8 @@ CORE_PHONE_NUMBER = config("CORE_PHONE_NUMBER")
 
 # Django Cron
 CRON_CLASSES = [
-    'shared.cron.RunEmailsCommand',
-    'shared.cron.RunSLACommand',
+    "shared.cron.RunEmailsCommand",
+    "shared.cron.RunSLACommand",
 ]
 
 LOGGING = {
@@ -332,9 +342,9 @@ LOGGING = {
     },
     "loggers": {
         "django": {
-           "handlers": ["console"],
-           "level": "INFO",
-           "propagate": True,
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": True,
         },
         "tenant": {
             "handlers": ["console"],
