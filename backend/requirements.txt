@@ -24,7 +24,7 @@ daphne
 django-redis
 python-decouple
 openpyxl
-google-generativeai>=0.7,<1.0
+google-generativeai>=0.8.6,<1.0
 numpy>=2.1,<3.0
 pydantic>=2.7.0,<3.0
 cryptography>=42.0.0
