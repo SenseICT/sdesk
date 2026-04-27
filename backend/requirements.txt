@@ -31,6 +31,6 @@ cryptography>=42.0.0
 google-auth>=2.29.0
 google-auth-oauthlib>=1.2.0
 msal>=1.29.0
-dnspython>=2.6.0
+dnspython>=2.8.0
 beautifulsoup4
 mysqlclient
